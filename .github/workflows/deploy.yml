@@ -17,6 +17,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Debug workspace
+        run: |
+          echo "Current directory: $PWD"
+          ls -la
+          echo "Webapp directory contents:"
+          ls -la webapp/
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
