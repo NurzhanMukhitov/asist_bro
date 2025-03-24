@@ -13,9 +13,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: webapp
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,15 +25,17 @@ jobs:
           cache-dependency-path: 'webapp/package-lock.json'
 
       - name: Install dependencies
+        working-directory: webapp
         run: npm ci
 
       - name: Build
+        working-directory: webapp
         run: npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: webapp/dist
 
   deploy:
     environment:
