@@ -22,7 +22,7 @@ jobs:
           echo "Current directory: $PWD"
           ls -la
           echo "Webapp directory contents:"
-          ls -la webapp/
+          cd webapp && ls -la
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -30,17 +30,17 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        working-directory: webapp
+        working-directory: ./webapp
         run: npm ci
 
       - name: Build
-        working-directory: webapp
+        working-directory: ./webapp
         run: npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: webapp/dist
+          path: ./webapp/dist
 
   deploy:
     environment:
