@@ -33,21 +33,21 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { WebApp } from '@telegram-web-apps/core'
 
 const messages = ref([])
 const newMessage = ref('')
 const isRecording = ref(false)
 const mediaRecorder = ref(null)
 const audioChunks = ref([])
+const tg = window.Telegram.WebApp
 
 onMounted(() => {
   // Инициализация Telegram Web App
-  WebApp.ready()
+  tg.ready()
   
   // Настройка цветовой схемы
-  document.body.style.backgroundColor = WebApp.backgroundColor
-  document.body.style.color = WebApp.textColor
+  document.body.style.backgroundColor = tg.backgroundColor
+  document.body.style.color = tg.textColor
   
   // Добавляем приветственное сообщение
   messages.value.push({
@@ -74,18 +74,20 @@ async function sendMessage() {
   
   try {
     // Отправляем сообщение боту через Telegram Web App
-    const response = await WebApp.sendData({
+    tg.sendData(JSON.stringify({
       type: 'message',
       text: messageText
-    })
+    }))
     
-    // Добавляем ответ бота
-    messages.value.push({
-      id: Date.now(),
-      text: response.text,
-      isUser: false,
-      audioUrl: response.audioUrl
-    })
+    // В реальном приложении здесь нужно дождаться ответа от бота
+    // Сейчас просто имитируем ответ
+    setTimeout(() => {
+      messages.value.push({
+        id: Date.now(),
+        text: 'Получил ваше сообщение! Скоро отвечу.',
+        isUser: false
+      })
+    }, 1000)
   } catch (error) {
     console.error('Ошибка при отправке сообщения:', error)
     messages.value.push({
@@ -111,18 +113,20 @@ async function startVoiceRecording() {
       
       try {
         // Отправляем голосовое сообщение боту через Telegram Web App
-        const response = await WebApp.sendData({
+        tg.sendData(JSON.stringify({
           type: 'voice',
-          audio: audioBlob
-        })
+          audio: await blobToBase64(audioBlob)
+        }))
         
-        // Добавляем ответ бота
-        messages.value.push({
-          id: Date.now(),
-          text: response.text,
-          isUser: false,
-          audioUrl: response.audioUrl
-        })
+        // В реальном приложении здесь нужно дождаться ответа от бота
+        // Сейчас просто имитируем ответ
+        setTimeout(() => {
+          messages.value.push({
+            id: Date.now(),
+            text: 'Получил ваше голосовое сообщение! Скоро отвечу.',
+            isUser: false
+          })
+        }, 1000)
       } catch (error) {
         console.error('Ошибка при отправке голосового сообщения:', error)
         messages.value.push({
@@ -150,6 +154,15 @@ function stopVoiceRecording() {
     mediaRecorder.value.stop()
     isRecording.value = false
   }
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result.split(',')[1])
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
 }
 </script>
 
