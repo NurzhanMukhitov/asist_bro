@@ -16,13 +16,20 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Debug workspace
         run: |
           echo "Current directory: $PWD"
+          echo "Directory contents:"
           ls -la
-          echo "Webapp directory contents:"
-          cd webapp && ls -la
+          echo "Parent directory contents:"
+          ls -la ..
+          echo "Root directory contents:"
+          ls -la /
+          echo "Home directory contents:"
+          ls -la ~
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -30,17 +37,33 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        working-directory: ./webapp
-        run: npm ci
+        run: |
+          if [ -d "webapp" ]; then
+            cd webapp
+            npm ci
+          else
+            echo "Error: webapp directory not found"
+            pwd
+            ls -la
+            exit 1
+          fi
 
       - name: Build
-        working-directory: ./webapp
-        run: npm run build
+        run: |
+          if [ -d "webapp" ]; then
+            cd webapp
+            npm run build
+          else
+            echo "Error: webapp directory not found"
+            pwd
+            ls -la
+            exit 1
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./webapp/dist
+          path: webapp/dist
 
   deploy:
     environment:
